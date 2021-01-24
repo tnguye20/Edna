@@ -1,0 +1,7 @@
+Flask
+pandas
+numpy
+firebase-admin
+flask-cors
+flask_sslify
+gunicorn
