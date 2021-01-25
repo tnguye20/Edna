@@ -103,38 +103,10 @@ def chatToCSV(chatFilePath, data):
 
 
 ## Data Funcs
-def getLoveMask(df):
-    return df['content'].str.contains('((I |me )(still |just )?(l|w)ove (you|u))|(^(l|w)ove (you|u))', flags=re.IGNORECASE, regex=True)
+def get_masked_frame(df, pattern):
+    return df[df['content'].str.contains(pattern, flags=re.IGNORECASE, regex=True)]
 
-def getMissMask(df):
-    return df['content'].str.contains('((I |me )(still |just )?miss (you|u))|(^miss (you|u))', flags=re.IGNORECASE, regex=True)
-
-def getMask(df, pattern):
-    return df['content'].str.contains(pattern, flags=re.IGNORECASE, regex=True)
-
-def getCustomMasks():
-    LOVE_MASK = getLoveMask(chat)
-    MISS_MASK = getMissMask(chat)
-    CUSTOM_MASKS = [
-        {
-            'name': 'love_mask',
-            'mask': LOVE_MASK
-        },
-        {
-            'name': 'miss_mask',
-            'mask': MISS_MASK
-        }
-    ]
-    return CUSTOM_MASKS
-
-def getMaskedData(df, parentDf=None):
-    data = {}
-    for mask in getCustomMasks():
-        data[mask['name']] = getGeneralStatistic(df[mask['mask']], df)
-    
-    return data
-
-def getGeneralStatistic(df, parentDf=None):
+def get_general_statistics(df, parentDf=None):
     data = {}
     
     totalText = df.shape[0]
@@ -151,7 +123,7 @@ def getGeneralStatistic(df, parentDf=None):
     
     range_df = parentDf if parentDf is not None else df
     
-    if(range_df.shape[0] > 0):
+    if(range_df.shape[0] > 0 and df.shape[0] > 0):
         delta = range_df['timestamp'].iloc[-1] - range_df['timestamp'].iloc[0] 
         delta_month = math.ceil(delta/np.timedelta64(1, 'M'))
         delta_day = math.ceil(delta/np.timedelta64(1, 'D'))
@@ -159,14 +131,19 @@ def getGeneralStatistic(df, parentDf=None):
         data['totalDay'] = delta_day
         data['means']['month'] = (totalText / delta_month) if delta_month > 0 else totalText
         data['means']['day'] = (totalText / delta_day) if delta_day > 0 else totalText
+
+        data['first_record_timestamp'] = df.iloc[0]['timestamp']
+        data['last_record_timestamp'] = df.iloc[-1]['timestamp']
     else:
         data['totalMonth'] = 0
         data['totalDay'] = 0
         data['means']['month'] = totalText
         data['means']['day'] = totalText
 
+        data['first_record_timestamp'] = None
+        data['last_record_timestamp'] = None
+
     data['years'] = years
     data['months'] = months
     
-    data['first_record_timestamp'] = df.iloc[0]['timestamp']
-    data['last_record_timestamp'] = df.iloc[-1]['timestamp']
+    return data
