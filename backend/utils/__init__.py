@@ -112,8 +112,30 @@ def getMissMask(df):
 def getMask(df, pattern):
     return df['content'].str.contains(pattern, flags=re.IGNORECASE, regex=True)
 
-def getGeneralStatistic(df):
-    data = OrderedDict()
+def getCustomMasks():
+    LOVE_MASK = getLoveMask(chat)
+    MISS_MASK = getMissMask(chat)
+    CUSTOM_MASKS = [
+        {
+            'name': 'love_mask',
+            'mask': LOVE_MASK
+        },
+        {
+            'name': 'miss_mask',
+            'mask': MISS_MASK
+        }
+    ]
+    return CUSTOM_MASKS
+
+def getMaskedData(df, parentDf=None):
+    data = {}
+    for mask in getCustomMasks():
+        data[mask['name']] = getGeneralStatistic(df[mask['mask']], df)
+    
+    return data
+
+def getGeneralStatistic(df, parentDf=None):
+    data = {}
     
     totalText = df.shape[0]
     participants = df['sender'].unique().tolist()
@@ -124,32 +146,27 @@ def getGeneralStatistic(df):
     data['participants'] = participants
     
     #Mean
-    data['means'] = OrderedDict()
+    data['means'] = {}
     data['means']['year'] = totalText / len(years) if len(years) > 0 else 0
-
-    data['years'] = years
-    data['months'] = months
-
-    if(df.shape[0] > 0):
-        delta = df['timestamp'].iloc[-1] - df['timestamp'].iloc[0] 
+    
+    range_df = parentDf if parentDf is not None else df
+    
+    if(range_df.shape[0] > 0):
+        delta = range_df['timestamp'].iloc[-1] - range_df['timestamp'].iloc[0] 
         delta_month = math.ceil(delta/np.timedelta64(1, 'M'))
         delta_day = math.ceil(delta/np.timedelta64(1, 'D'))
         data['totalMonth'] = delta_month
         data['totalDay'] = delta_day
         data['means']['month'] = (totalText / delta_month) if delta_month > 0 else totalText
         data['means']['day'] = (totalText / delta_day) if delta_day > 0 else totalText
-
-        data['first_record_timestamp'] = df.iloc[0]['timestamp']
-        data['last_record_timestamp'] = df.iloc[-1]['timestamp']
-        # data['first_record_timestamp'] = df.iloc[0]['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
-        # data['last_record_timestamp'] = df.iloc[-1]['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
     else:
         data['totalMonth'] = 0
         data['totalDay'] = 0
         data['means']['month'] = totalText
         data['means']['day'] = totalText
 
-        data['first_record_timestamp'] = None
-        data['last_record_timestamp'] = None
+    data['years'] = years
+    data['months'] = months
     
-    return data
+    data['first_record_timestamp'] = df.iloc[0]['timestamp']
+    data['last_record_timestamp'] = df.iloc[-1]['timestamp']
