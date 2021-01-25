@@ -1,5 +1,5 @@
 from os import path
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sslify import SSLify
 import json
@@ -52,11 +52,17 @@ def _generate():
 def _get_statistic():
     try:
         uid = verifyPOST(request)
+        return get_user_statistics(uid)
+    except Exception as error:
+        print(error)
+        return 'Bad Request'
 
-        userDao = UserDao(uid)
-        data = userDao.getUser()
-
-        return data['statistics']
+@app.route('/formatted/getData', methods = ['GET'])
+def _get_formatted_data():
+    try:
+        uid = verifyPOST(request)
+        payload =  get_formatted_data(uid)
+        return jsonify(payload)
     except Exception as error:
         print(error)
         return 'Bad Request'

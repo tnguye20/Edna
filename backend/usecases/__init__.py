@@ -1,6 +1,6 @@
 from os import path
 from utils import *
-# from daos import UserDao
+from daos import UserDao
 import numpy as np
 import pandas as pd
 import re
@@ -48,7 +48,7 @@ def generate_all_data(uid, filePath):
 
     #Init Data Collection
     data = getGeneralStatistic(chat)
-    data['annual_statistic'] = OrderedDict()
+    data['annual_statistics'] = OrderedDict()
     data['love_statistic'] = getGeneralStatistic(love_chat)
     data['miss_statistic'] = getGeneralStatistic(miss_chat)
 
@@ -57,14 +57,51 @@ def generate_all_data(uid, filePath):
         year = str(year)
         _love_chat = _chat[getLoveMask(_chat)]
         _miss_chat = _chat[getMissMask(_chat)]
-        data['annual_statistic'][year] = getGeneralStatistic(_chat) 
-        data['annual_statistic'][year]['love_statistic'] = getGeneralStatistic(_love_chat)
-        data['annual_statistic'][year]['miss_statistic'] = getGeneralStatistic(_miss_chat)
-        
-        data['annual_statistic'][year]['monthly_statistic'] = OrderedDict()
+        data['annual_statistics'][year] = getGeneralStatistic(_chat)
+        data['annual_statistics'][year]['love_statistic'] = getGeneralStatistic(_love_chat)
+        data['annual_statistics'][year]['miss_statistic'] = getGeneralStatistic(_miss_chat)
+
+        data['annual_statistics'][year]['monthly_statistics'] = OrderedDict()
         for month in _chat['month'].unique():
             _month_chat = _chat[_chat['month'] == month]
+            _month_love_chat = _month_chat[getLoveMask(_month_chat)]
+            _month_miss_chat = _month_chat[getMissMask(_month_chat)]
             month = str(month)
-            data['annual_statistic'][year]['monthly_statistic'][month] = getGeneralStatistic(_month_chat)
+            data['annual_statistics'][year]['monthly_statistics'][month] = getGeneralStatistic(_month_chat)
+            data['annual_statistics'][year]['monthly_statistics'][month]['love_statistic'] = getGeneralStatistic(_month_love_chat)
+            data['annual_statistics'][year]['monthly_statistics'][month]['miss_statistic'] = getGeneralStatistic(_month_miss_chat)
 
     return data
+
+def get_user_statistics(uid):
+    userDao = UserDao(uid)
+    data = userDao.getUser()
+    return data['statistics']
+
+def get_formatted_data(uid):
+    statistics = get_user_statistics(uid)
+    annual_data = []
+    monthly_data = []
+
+    for year in statistics['years']:
+        year = str(year)
+        annual_statistic = statistics['annual_statistics'][year]
+        annual_data.append({
+            "label": year,
+            "data": annual_statistic["totalText"],
+        })
+        
+        months = annual_statistic["months"]
+        for month in months:
+            month = str(month)
+            monthly_statistic = annual_statistic['monthly_statistics'][month]
+            monthly_data.append({
+                "label": f'{year}-{month}',
+                "data": monthly_statistic["totalText"],
+            })
+
+    payload = {
+        "annual_data": annual_data,
+        "monthly_data": monthly_data
+    }
+    return payload

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { auth, storage } from '../../libraries';
+import { storage } from '../../libraries';
 import { useAuthValue } from '../../contexts';
 import { useAlert } from '../../hooks';
 import { edna } from '../../api';
@@ -12,7 +12,7 @@ import {
   Collapse
 } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
-import './index.css';
+import './UploadChat.css';
 
 import { ALERT_TYPES } from '../../constants/';
 

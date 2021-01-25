@@ -1,17 +1,19 @@
 import axios from 'axios';
 import { ROUTES } from '../../constants';
-import { ApiResponse } from '../../Interfaces';
+import { FormattedData, FormattedDataResponse } from '../../Interfaces';
 
-export const generate = async (token: string): Promise<ApiResponse> => {
+export const getFormattedData = async (token: string): Promise<FormattedDataResponse> => {
     try {
-        const url = ROUTES.API_EDNA_GENERATE;
+        const url = ROUTES.API_EDNA_GET_FORMATTED_DATA;
         const options = {
             headers: {
                 "AUTH-TOKEN": token
             }
         };
 
-        const { status, statusText, data } = await axios.post(url, {}, options);
+        const { status, statusText, data } = await axios.get(url, {
+            ...options 
+        });
         return {
             status, statusText, data
         };

@@ -15,7 +15,8 @@ import {
   Login,
   Signup,
   Signout,
-  UploadChat
+  UploadChat,
+  Main
 } from './components';
 
 function App() {
@@ -35,8 +36,12 @@ function App() {
               <Signout />
             </AuthRoute>
 
-            <AuthRoute path={ ROUTES.ROOT }>
+            <AuthRoute path={ ROUTES.UPLOAD_CHAT }>
               <UploadChat />
+            </AuthRoute>
+
+            <AuthRoute path={ ROUTES.ROOT }>
+              <Main />
             </AuthRoute>
         </Switch>
       </Router>
