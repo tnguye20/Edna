@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { ROUTES } from '../../constants';
-import { FormattedData, FormattedDataResponse } from '../../Interfaces';
+import { FormattedDataResponse } from '../../Interfaces';
 
 export const getFormattedData = async (token: string): Promise<FormattedDataResponse> => {
     try {

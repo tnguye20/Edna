@@ -43,10 +43,13 @@ export interface ChartDataPoint {
 
 export type ChartDataPoints = ChartDataPoint[]
 
-export type FormattedData = {
+export interface FormattedData {
     annual_data: ChartDataPoints,
     monthly_data: ChartDataPoints
+    masks_data: Record<string, Record<string, any>>
 }
+
+export type FormattedDataKey = keyof FormattedData;
 
 export interface FormattedDataResponse extends ApiResponse {
     data: FormattedData

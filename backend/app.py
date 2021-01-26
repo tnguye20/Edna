@@ -59,13 +59,13 @@ def _get_statistic():
 
 @app.route('/formatted/getData', methods = ['GET'])
 def _get_formatted_data():
-    try:
-        uid = verifyPOST(request)
-        payload =  get_formatted_data(uid)
-        return jsonify(payload)
-    except Exception as error:
-        print(error)
-        return 'Bad Request'
+    # try:
+    uid = verifyPOST(request)
+    payload =  get_formatted_data(uid)
+    return jsonify(payload)
+    # except Exception as error:
+    #     print(error)
+    #     return 'Bad Request'
 
 if __name__ == '__main__':
     # app.run(debug=True)

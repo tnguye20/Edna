@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from os import path
 from utils import *
 from daos import UserDao
@@ -49,7 +50,6 @@ def generate_all_data(uid, filePath):
     data['masks'] = get_masked_data(masks, chat)
 
     for year in data['years']:
-        print(year)
         _chat = chat[chat['year'] == year]
         year = str(year)
         data['annual_statistics'][year] = get_general_statistics(_chat)
@@ -76,8 +76,17 @@ def get_user_masks(uid):
 
 def get_formatted_data(uid):
     statistics = get_user_statistics(uid)
+    masks = get_user_masks(uid)
+
     annual_data = []
     monthly_data = []
+    masks_data = {}
+
+    for mask in masks:
+        masks_data[mask['name']] = {
+            "label": 'total',
+            "data": statistics['masks'][mask['name']]['totalText']
+        }
 
     for year in statistics['years']:
         year = str(year)
@@ -86,6 +95,14 @@ def get_formatted_data(uid):
             "label": year,
             "data": annual_statistic["totalText"],
         })
+        for mask in masks:
+            mask_statistic = annual_statistic['masks'][mask['name']]
+            if mask_statistic['totalText'] > 0:
+                masks_data[mask['name']][year] = {
+                    "months": OrderedDict(),
+                    "label": year,
+                    "data": mask_statistic['totalText']
+                }
 
         months = annual_statistic["months"]
         for month in months:
@@ -93,11 +110,18 @@ def get_formatted_data(uid):
             monthly_statistic = annual_statistic['monthly_statistics'][month]
             monthly_data.append({
                 "label": f'{year}-{month}',
-                "data": monthly_statistic["totalText"],
+                "data": monthly_statistic['totalText'],
             })
+            for mask in masks:
+                mask_statistic = monthly_statistic['masks'][mask['name']]
+                masks_data[mask['name']][year]['months'][month] = {}
+                if mask_statistic['totalText'] > 0:
+                    masks_data[mask['name']][year]['months'][month]['label'] = f'{year}-{month}'
+                    masks_data[mask['name']][year]['months'][month]['data'] = mask_statistic['totalText']
 
     payload = {
         "annual_data": annual_data,
-        "monthly_data": monthly_data
+        "monthly_data": monthly_data,
+        "masks_data": masks_data
     }
     return payload
