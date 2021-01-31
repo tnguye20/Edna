@@ -125,8 +125,12 @@ def get_general_statistics(df, parentDf=None):
     
     if(range_df.shape[0] > 0 and df.shape[0] > 0):
         delta = range_df['timestamp'].iloc[-1] - range_df['timestamp'].iloc[0] 
-        delta_month = math.ceil(delta/np.timedelta64(1, 'M'))
-        delta_day = math.ceil(delta/np.timedelta64(1, 'D'))
+        delta_month = delta/np.timedelta64(1, 'M')
+        delta_day = delta/np.timedelta64(1, 'D')
+
+        delta_month = delta_month if delta_month > 1 else 1
+        delta_day = delta_day if delta_day > 1 else 1
+
         data['totalMonth'] = delta_month
         data['totalDay'] = delta_day
         data['means']['month'] = (totalText / delta_month) if delta_month > 0 else totalText

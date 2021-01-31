@@ -1,4 +1,4 @@
-from os import path
+from os import path, environ
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sslify import SSLify
@@ -68,5 +68,7 @@ def _get_formatted_data():
     #     return 'Bad Request'
 
 if __name__ == '__main__':
-    # app.run(debug=True)
-    app.run(ssl_context="adhoc", host="0.0.0.0", port=5000)
+    if(environ.get('EDNA_DEBUG')):
+        app.run(debug=True)
+    else:
+        app.run(ssl_context="adhoc", host="0.0.0.0", port=5000)

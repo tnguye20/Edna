@@ -2,6 +2,9 @@ import * as React from 'react';
 import { useAuthValue } from '../../contexts';
 import { edna } from '../../api';
 import { ChartDataPoint, ChartDataPoints, FormattedData, FormattedDataKey } from '../../Interfaces';
+import {
+    LinearProgress
+} from '@material-ui/core';
 
 import {
   Grid,
@@ -18,6 +21,7 @@ import {
     ResponsiveContainer
 } from 'recharts';
 import { nodeModuleNameResolver } from 'typescript';
+import { red } from '@material-ui/core/colors';
 
 const CHART_TITLES = {
     annual_data: 'Annual Texts Summary',
@@ -43,6 +47,30 @@ export const Main: React.FunctionComponent = () => {
         }
         get();
     }, [authUser.idToken]);
+
+    const processMaskCharts = (): JSX.Element[] => {
+        const annual_components: JSX.Element[] = [];
+        const monthly_components: JSX.Element[] = [];
+
+        Object.keys(formattedData.masks_data).forEach((mask) => {
+            const { annual_data, display_name, monthly_data } = formattedData.masks_data[mask];
+
+            annual_components.push(
+                <BasicLineChart data={annual_data} title={`Annual '${display_name}' Summary`} />
+            )
+
+            // Reduce the monthly into one blob for now
+            const reduced_month = Object.values(monthly_data).reduce((accumulator: any, cv: any) => {
+                return [...accumulator, ...cv];
+            }, []);
+
+            if(Array.isArray(reduced_month)){
+                monthly_components.push(<BasicLineChart data={reduced_month} title={`Monthly '${display_name}' Summary`} />);
+            }
+        });
+
+        return [...annual_components, ...monthly_components];
+    }
 
     return (
         <Container>
@@ -78,24 +106,8 @@ export const Main: React.FunctionComponent = () => {
                 }
                 {
                     Object.keys(formattedData).length > 0
-                    ? (
-                        Object.keys(formattedData.masks_data)
-                        .map((mask) => {
-                            const data = Object.keys(formattedData.masks_data[mask])
-                            .reduce((accumulator, current: string) => {
-                                if(isNaN(parseFloat(current))){
-                                    return accumulator;
-                                }
-                                return [...accumulator, formattedData.masks_data[mask][current]]
-                            }, [] as ChartDataPoints);
-
-                            return (
-                                <Grid item xs={12} sm={12}>
-                                    <BasicLineChart data={data} title={mask}/>
-                                </Grid>
-                            );
-                        })
-                    ) : ''
+                    ? processMaskCharts()
+                    : <LinearProgress />
                 }
             </Grid>
         </Container>

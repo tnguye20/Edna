@@ -82,10 +82,16 @@ def get_formatted_data(uid):
     monthly_data = []
     masks_data = {}
 
+    # for mask in masks:
+    #     masks_data[mask['name']] = {
+    #         "label": 'total',
+    #         "data": statistics['masks'][mask['name']]['totalText']
+    #     }
     for mask in masks:
         masks_data[mask['name']] = {
-            "label": 'total',
-            "data": statistics['masks'][mask['name']]['totalText']
+            "annual_data": [],
+            "monthly_data": {},
+            "display_name": mask["display_name"]
         }
 
     for year in statistics['years']:
@@ -94,15 +100,28 @@ def get_formatted_data(uid):
         annual_data.append({
             "label": year,
             "data": annual_statistic["totalText"],
+            "means": annual_statistic["means"],
+            "first_record_timestamp": annual_statistic["first_record_timestamp"],
+            "last_record_timestamp": annual_statistic["last_record_timestamp"]
         })
+        # for mask in masks:
+        #     mask_statistic = annual_statistic['masks'][mask['name']]
+        #     if mask_statistic['totalText'] > 0:
+        #         masks_data[mask['name']][year] = {
+        #             "months": OrderedDict(),
+        #             "label": year,
+        #             "data": mask_statistic['totalText']
+        #         }
         for mask in masks:
             mask_statistic = annual_statistic['masks'][mask['name']]
-            if mask_statistic['totalText'] > 0:
-                masks_data[mask['name']][year] = {
-                    "months": OrderedDict(),
-                    "label": year,
-                    "data": mask_statistic['totalText']
-                }
+            masks_data[mask['name']]['monthly_data'][year] = []
+            masks_data[mask['name']]['annual_data'].append({
+                "label": year,
+                "data": mask_statistic["totalText"],
+                "means": mask_statistic["means"],
+                "first_record_timestamp": mask_statistic["first_record_timestamp"],
+                "last_record_timestamp": mask_statistic["last_record_timestamp"]
+            })
 
         months = annual_statistic["months"]
         for month in months:
@@ -111,13 +130,25 @@ def get_formatted_data(uid):
             monthly_data.append({
                 "label": f'{year}-{month}',
                 "data": monthly_statistic['totalText'],
+                "means": monthly_statistic['means'],
+                "first_record_timestamp": monthly_statistic["first_record_timestamp"],
+                "last_record_timestamp": monthly_statistic["last_record_timestamp"]
             })
+            # for mask in masks:
+            #     mask_statistic = monthly_statistic['masks'][mask['name']]
+            #     masks_data[mask['name']][year]['months'][month] = {}
+            #     if mask_statistic['totalText'] > 0:
+            #         masks_data[mask['name']][year]['months'][month]['label'] = f'{year}-{month}'
+            #         masks_data[mask['name']][year]['months'][month]['data'] = mask_statistic['totalText']
             for mask in masks:
                 mask_statistic = monthly_statistic['masks'][mask['name']]
-                masks_data[mask['name']][year]['months'][month] = {}
-                if mask_statistic['totalText'] > 0:
-                    masks_data[mask['name']][year]['months'][month]['label'] = f'{year}-{month}'
-                    masks_data[mask['name']][year]['months'][month]['data'] = mask_statistic['totalText']
+                masks_data[mask['name']]['monthly_data'][year].append({
+                    "label": f'{year}-{month}',
+                    "data": mask_statistic["totalText"],
+                    "means": mask_statistic["means"],
+                    "first_record_timestamp": mask_statistic["first_record_timestamp"],
+                    "last_record_timestamp": mask_statistic["last_record_timestamp"]
+                })
 
     payload = {
         "annual_data": annual_data,

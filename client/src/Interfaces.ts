@@ -38,7 +38,7 @@ export interface EdnaResponse extends ApiResponse {
 
 export interface ChartDataPoint {
     label: string,
-    data: number
+    data: number,
 }
 
 export type ChartDataPoints = ChartDataPoint[]
@@ -53,4 +53,4 @@ export type FormattedDataKey = keyof FormattedData;
 
 export interface FormattedDataResponse extends ApiResponse {
     data: FormattedData
-}
+};
